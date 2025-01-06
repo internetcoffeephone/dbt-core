@@ -1,0 +1,6 @@
+kind: Fixes
+body: Fix microbatch dbt list --output json
+time: 2025-01-07T10:57:38.985761+01:00
+custom:
+    Author: internetcoffeephone
+    Issue: "11098"

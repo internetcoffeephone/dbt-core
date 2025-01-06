@@ -1,3 +1,4 @@
+import json
 from unittest import mock
 
 import pytest
@@ -15,6 +16,7 @@ from dbt.events.types import (
     MicrobatchMacroOutsideOfBatchesDeprecation,
     MicrobatchModelNoEventTimeInputs,
 )
+from dbt.tests.fixtures.project import TestProjInfo
 from dbt.tests.util import (
     get_artifact,
     patch_microbatch_end_time,
@@ -327,6 +329,17 @@ class TestMicrobatchCLI(BaseMicrobatchTest):
             ]
         )
         self.assert_row_count(project, "microbatch_model", 1)
+
+    def test_list_output_json(self, project: TestProjInfo):
+        """Test whether the command `dbt list --output json` works"""
+        model_catcher = EventCatcher(event_to_catch=LogModelResult)
+        batch_catcher = EventCatcher(event_to_catch=LogBatchResult)
+
+        _, microbatch_json = run_dbt(
+            ["list", "--output", "json"], callbacks=[model_catcher.catch, batch_catcher.catch]
+        )
+        microbatch_dict = json.loads(microbatch_json)
+        assert microbatch_dict["config"]["begin"] == "2020-01-01T00:00:00"
 
 
 class TestMicrobatchCLIBuild(TestMicrobatchCLI):
